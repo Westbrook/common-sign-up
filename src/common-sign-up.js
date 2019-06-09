@@ -1,5 +1,7 @@
 import { LitElement, html } from 'lit-element';
 
+import { styles } from './styles.js';
+
 class CommonSignUp extends LitElement {
 	static get properties() {
 		return {
@@ -20,8 +22,8 @@ class CommonSignUp extends LitElement {
   constructor() {
     super();
     this.step = 0;
-    this.availabilities = [{"available_rooms":["1A","3B","4B","9C"],"apartment_name":"Baltic","home_id":1},{"available_rooms":["7C","1C","3B","4A"],"apartment_name":"Marcy","home_id":2},{"available_rooms":["5F","1A","1B","1C","3D","6B","5G"],"apartment_name":"Hamilton","home_id":3}]
-    this.homeId = -1;
+    this.availabilities = [{apartment_name: 'Loading availabilities...'}];
+    this.homeId = 1;
     this.roomNumber = -1;
     this.tennantOptions = [1,2];
     this.tennantCount = 1;
@@ -33,7 +35,13 @@ class CommonSignUp extends LitElement {
   }
 
   continue() {
-    this.step += 1;
+    if (this.$form.checkValidity()) {
+      this.step += 1;
+    } else {
+      [...this.shadowRoot.querySelectorAll('input')].map(input => {
+        input.setAttribute('focused','');
+      });
+    }
   }
 
   back() {
@@ -50,6 +58,7 @@ class CommonSignUp extends LitElement {
   }
 
   setRoomNumber({target}) {
+    debugger;
     this.roomNumber = target.value;
   }
 
@@ -89,6 +98,10 @@ class CommonSignUp extends LitElement {
     }
   }
 
+  focused({target}) {
+    target.setAttribute('focused','');
+  }
+
   get roomsByHomeId() {
     const homeData = this.availabilities.filter(
         availability => availability.home_id === this.homeId
@@ -106,13 +119,14 @@ class CommonSignUp extends LitElement {
 	get stepOne() {
 		return html`
       <fieldset>
-  			<legend>Home and term information</legend>
+  			<legend class="main-title">Home and term information</legend>
         <label>
           Home
           <select
+            required
             @change=${this.setHomeId}
           >
-            <option>Select a home</option>
+            <option disabled>Select a home</option>
             ${this.availabilities.map(availability => html`
               <option
                 value=${availability.home_id}
@@ -124,9 +138,10 @@ class CommonSignUp extends LitElement {
         <label>
           Room
           <select
+            required
             @change=${this.setRoomNumber}
-            ?disabled=${this.homeId === -1}
           >
+            <option disabled>Select a room</option>
             ${this.roomsByHomeId.map(room => html`
               <option
                 value=${room}
@@ -138,8 +153,10 @@ class CommonSignUp extends LitElement {
         <label>
           How many people are applying to live here?
           <select
+            required
             @change=${this.setTenantCount}
           >
+            <option disabled>Select a roommate count</option>
             ${this.tennantOptions.map(option => html`
               <option
                 value=${option}
@@ -151,6 +168,7 @@ class CommonSignUp extends LitElement {
         <label>
           Desired move-in date
           <input
+            required
             type="date"
             @change=${this.setMoveInDate}
             .value=${this.moveInDate.toISOString().substr(0, 10)}
@@ -159,8 +177,10 @@ class CommonSignUp extends LitElement {
         <label>
           Desired term length
           <select
+            required
             @change=${this.setTerm}
           >
+            <option disabled>Select a term length in months</option>
             ${this.termOptions.map(option => html`
               <option
                 value=${option}
@@ -170,9 +190,63 @@ class CommonSignUp extends LitElement {
           </select>
         </label>
         <button
+          class="continue"
           type="button"
           @click=${this.continue}
         >Continue</button>
+      </fieldset>
+    `;
+  }
+
+  getApplicantData(title, applicant, onChange) {
+    return html`
+      <fieldset>
+        <legend class="sub-title">${title}</legend>
+        <label>
+          First name
+          <input
+            type="text"
+            name="firstName"
+            required
+            @change=${onChange}
+            .value=${applicant.firstName}
+          />
+          <span>Please supply a first name</span>
+        </label>
+        <label>
+          Last name
+          <input
+            type="text"
+            name="lastName"
+            required
+            @change=${onChange}
+            .value=${applicant.lastName}
+          />
+          <span>Please supply a last name</span>
+        </label>
+        <label>
+          Email
+          <input
+            type="email"
+            name="email"
+            required
+            @change=${onChange}
+            .value=${applicant.email}
+          />
+          <span>Please supply a valid email address</span>
+        </label>
+        <label>
+          Phone
+          <input
+            type="tel"
+            name="phone"
+            pattern="(1?)[0-9]{3}(-?)[0-9]{3}(-?)[0-9]{4}"
+            required
+            @change=${onChange}
+            .value=${applicant.phone}
+          />
+          <span>Please supply a valid phone number</span>
+        </label>
       </fieldset>
     `;
   }
@@ -180,107 +254,30 @@ class CommonSignUp extends LitElement {
   get stepTwo() {
     return html`
       <fieldset>
-        <legend>Application form</legend>
+        <legend class="main-title">Application form</legend>
         <p>General personal information</p>
-        <fieldset>
-          ${this.tennantCount === 2
-            ? html`
-              <legend>Applicant 1</legend>
-            `
-            : html`
-              <legend>Applicant</legend>
-            `
-          }
-          <label>
-            First name
-            <input
-              type="text"
-              name="firstName"
-              @change=${this.setApplicantOne}
-              .value=${this.applicant1.firstName}
-            />
-          </label>
-          <label>
-            Last name
-            <input
-              type="text"
-              name="lastName"
-              @change=${this.setApplicantOne}
-              .value=${this.applicant1.lastName}
-            />
-          </label>
-          <label>
-            Email
-            <input
-              type="email"
-              name="email"
-              @change=${this.setApplicantOne}
-              .value=${this.applicant1.email}
-            />
-          </label>
-          <label>
-            Phone
-            <input
-              type="tel"
-              name="phone"
-              pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-              required
-              @change=${this.setApplicantOne}
-              .value=${this.applicant1.phone}
-            />
-          </label>
-        </fieldset>
+        ${this.getApplicantData(
+          this.tennantCount === 2 ? 'Applicant 1' : 'Applicant',
+          this.applicant1,
+          this.setApplicantOne
+        )}
         ${this.tennantCount === 2
           ? html`
-            <fieldset>
-              <legend>Applicant 2</legend>
-              <label>
-                First name
-                <input
-                  type="text"
-                  name="firstName"
-                  @change=${this.setApplicantTwo}
-                  .value=${this.applicant2.firstName}
-                />
-              </label>
-              <label>
-                Last name
-                <input
-                  type="text"
-                  name="lastName"
-                  @change=${this.setApplicantTwo}
-                  .value=${this.applicant2.lastName}
-                />
-              </label>
-              <label>
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  @change=${this.setApplicantTwo}
-                  .value=${this.applicant2.email}
-                />
-              </label>
-              <label>
-                Phone
-                <input
-                  type="tel"
-                  name="phone"
-                  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                  required
-                  @change=${this.setApplicantTwo}
-                  .value=${this.applicant2.phone}
-                />
-              </label>
-            </fieldset>
+            ${this.getApplicantData(
+              'Applicant 2',
+              this.applicant2,
+              this.setApplicantTwo
+            )}
           `
           : html ``
         }
         <button
+          class="back"
           type="button"
           @click=${this.back}
         >Back</button>
         <button
+          class="continue"
           type="button"
           @click=${this.continue}
         >Continue</button>
@@ -288,12 +285,25 @@ class CommonSignUp extends LitElement {
     `;
   }
 
+  displayApplicantData(title, applicant) {
+    return html`
+      <dt class="main-data">${title}</dt>
+      <dd>
+        <p>
+          ${applicant.firstName} ${applicant.lastName}<br/>
+          ${applicant.email}<br/>
+          ${applicant.phone}
+        </p>
+      </dd>
+    `;
+  }
+
   get stepThree() {
     return html`
       <fieldset>
-        <legend>Confirmation</legend>
+        <legend class="main-title">Confirmation</legend>
         <dl>
-          <dt>Appartment:</dt>
+          <dt class="main-data">Appartment:</dt>
           <dd>${this.homeNameById} - ${this.roomNumber}</dd>
           <dt>Applicants:</dt>
           <dd>${this.tennantCount}</dd>
@@ -301,40 +311,27 @@ class CommonSignUp extends LitElement {
           <dd><time datetime=${this.moveInDate}>${new Intl.DateTimeFormat('en-US').format(this.moveInDate)}</time></dd>
           <dt>Length</dt>
           <dd>${this.term} months</dd>
+          ${this.displayApplicantData(
+            this.tennantCount === 2 ? 'Applicant 1' : 'Applicant',
+            this.applicant1
+          )}
           ${this.tennantCount === 2
             ? html`
-              <dt>Applicant 1</dt>
-            `
-            : html`
-              <dt>Applicant</dt>
-            `
-          }
-          <dd>
-            <p>
-              ${this.applicant1.firstName} ${this.applicant1.lastName}<br/>
-              ${this.applicant1.email}<br/>
-              ${this.applicant1.phone}
-            </p>
-          </dd>
-          ${this.tennantCount === 2
-            ? html`
-              <dt>Applicant 2</dt>
-              <dd>
-                <p>
-                  ${this.applicant2.firstName} ${this.applicant2.lastName}<br/>
-                  ${this.applicant2.email}<br/>
-                  ${this.applicant2.phone}
-                </p>
-              </dd>
+              ${this.displayApplicantData(
+                'Applicant 2',
+                this.applicant2
+              )}
             `
             : html``
           }
         </dl>
         <button
+          class="back"
           type="button"
           @click=${this.back}
         >Back</button>
         <button
+          class="submit"
           type="submit"
           @click=${this.submit}
         >Submit</button>
@@ -342,7 +339,7 @@ class CommonSignUp extends LitElement {
 		`;
 	}
 
-  render() {
+  get currentStep() {
     switch (this.step) {
       case 0:
         return this.stepOne;
@@ -351,6 +348,31 @@ class CommonSignUp extends LitElement {
       case 2:
         return this.stepThree;
     }
+  }
+
+  static get styles() {
+    return [styles];
+  }
+
+  render() {
+    return html`
+      <form
+        @focusout=${this.focused}
+      >
+        ${this.currentStep}
+      </form>
+    `;
+  }
+
+  firstUpdated() {
+    this.$form = this.shadowRoot.querySelector('form');
+    fetch('https://api.jsonbin.io/b/5cdb03f94fc34d41690069c5')
+      .then(resp => resp.json())
+      .then(availabilities => {
+        this.availabilities = availabilities;
+        this.homeId = availabilities[0].home_id;
+        this.roomNumber = this.roomsByHomeId[0];
+      })
   }
 }
 

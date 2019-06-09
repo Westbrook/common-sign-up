@@ -6,20 +6,25 @@
   <meta name="Description" content="Put your description here.">
 
   <style>
-    * {
+    body {
+      background-color: #ededed;
       margin: 0;
       padding: 0;
       font-family: sans-serif;
     }
-
-    body {
-      background-color: #ededed;
+    main {
+      width: 95%;
+      max-width: 400px;
+      margin: 0 auto;
     }
   </style>
   <title>common-sign-up</title>
 </head>
 <body>
-  <common-sign-up></common-sign-up>
+  <main role="main">
+    <h1>Sign up for Common</h1>
+    <common-sign-up></common-sign-up>
+  </main>
 
   <script type="module" src="./src/common-sign-up.js"></script>
 </body>
