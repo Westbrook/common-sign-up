@@ -6,6 +6,15 @@ Sign up for Common in three simple steps that confirm where you want to live, wh
 
 To specifically support the distribution to GitHub pages I manually altered the built assets to support the `/common-sign-up` root path forced onto the experience in that context. This won't occur by default with the current tooling.
 
+## Running
+
+```bash
+  git clone https://github.com/Westbrook/common-sign-up.git
+  cd common-sign-up
+  yarn
+  yarn start
+```
+
 ## Choices
 
 ### Web Components
