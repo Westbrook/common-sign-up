@@ -11,6 +11,6 @@ storiesOf('common-sign-up', module)
   .add(
     'Alternative Header',
     () => html`
-      <common-sign-up .header=${'Something else'}></common-sign-up>
+      <common-sign-up></common-sign-up>
     `,
   );
