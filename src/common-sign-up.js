@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+import { installRouter } from 'pwa-helpers/router.js';
 
 import { styles } from './styles.js';
 
@@ -42,6 +43,36 @@ class CommonSignUp extends LitElement {
         input.setAttribute('focused','');
       });
     }
+  }
+
+  get step() {
+    return this._step;
+  }
+
+  set step(step) {
+    if (step === this.step) return;
+    const old = this.step;
+    this._step = step;
+    this.updateRoute();
+    this.requestUpdate('step', old);
+  }
+
+  get stepAsText() {
+    switch (this.step) {
+      case 0:
+        return 'One';
+      case 1:
+        return 'Two';
+      case 2:
+        return 'Three';
+    }
+  }
+
+  updateRoute() {
+    const title = `Sign up for Commone: Step ${this.stepAsText}`;
+    const url = `/step-${this.stepAsText.toLowerCase()}.html`;
+    if (location.pathname === url) return;
+    history.pushState({}, title, url);
   }
 
   back() {
@@ -365,6 +396,7 @@ class CommonSignUp extends LitElement {
   }
 
   firstUpdated() {
+    installRouter((location) => this.route(location));
     this.$form = this.shadowRoot.querySelector('form');
     fetch('https://api.jsonbin.io/b/5cdb03f94fc34d41690069c5')
       .then(resp => resp.json())
@@ -372,7 +404,23 @@ class CommonSignUp extends LitElement {
         this.availabilities = availabilities;
         this.homeId = availabilities[0].home_id;
         this.roomNumber = this.roomsByHomeId[0];
-      })
+      });
+  }
+
+  route(location) {
+    const paths = location.pathname.split('/');
+    const route = paths[paths.length - 1];
+    switch (route) {
+      case 'step-three':
+        this.step = 2;
+        break;
+      case 'step-two':
+        this.step = 1;
+      case 'step-one':
+      default:
+        this.step = 0;
+        break;
+    }
   }
 }
 
